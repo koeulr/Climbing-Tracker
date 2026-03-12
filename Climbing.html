@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jahreskarte Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+
+:root {
+–bg: #0f0f0f;
+–surface: #1a1a1a;
+–surface2: #222;
+–border: #2e2e2e;
+–text: #f0ece3;
+–muted: #666;
+–accent-climb: #c8f55a;
+–accent-boulder: #f5a623;
+–danger: #ff5c5c;
+–good: #5cffa0;
+}
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+min-height: 100vh;
+padding: 24px 16px 80px;
+max-width: 540px;
+margin: 0 auto;
+}
+
+h1 {
+font-family: ‘Syne’, sans-serif;
+font-size: 2rem;
+font-weight: 800;
+letter-spacing: -0.02em;
+line-height: 1;
+margin-bottom: 4px;
+}
+
+.subtitle {
+color: var(–muted);
+font-size: 0.75rem;
+margin-bottom: 32px;
+}
+
+/* SECTIONS */
+.section {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 12px;
+padding: 20px;
+margin-bottom: 16px;
+}
+
+.section-title {
+font-family: ‘Syne’, sans-serif;
+font-size: 0.7rem;
+font-weight: 700;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 16px;
+}
+
+/* FORM ELEMENTS */
+label {
+display: block;
+font-size: 0.7rem;
+color: var(–muted);
+margin-bottom: 5px;
+letter-spacing: 0.05em;
+}
+
+input[type=“number”], input[type=“date”] {
+width: 100%;
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 8px;
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+font-size: 0.95rem;
+padding: 10px 12px;
+margin-bottom: 12px;
+transition: border-color 0.15s;
+-webkit-appearance: none;
+}
+
+input:focus {
+outline: none;
+border-color: var(–accent-climb);
+}
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* BUTTONS */
+.btn {
+display: block;
+width: 100%;
+border: none;
+border-radius: 10px;
+font-family: ‘Syne’, sans-serif;
+font-weight: 700;
+font-size: 1rem;
+padding: 14px;
+cursor: pointer;
+transition: transform 0.1s, opacity 0.15s;
+letter-spacing: 0.02em;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-climb {
+background: var(–accent-climb);
+color: #0f0f0f;
+}
+.btn-boulder {
+background: var(–accent-boulder);
+color: #0f0f0f;
+}
+.btn-save {
+background: var(–surface2);
+color: var(–text);
+border: 1px solid var(–border);
+font-size: 0.85rem;
+margin-top: 4px;
+}
+.btn-save:hover { border-color: var(–accent-climb); }
+.btn-delete {
+background: none;
+border: none;
+color: var(–muted);
+cursor: pointer;
+font-size: 0.8rem;
+padding: 2px 6px;
+transition: color 0.15s;
+}
+.btn-delete:hover { color: var(–danger); }
+
+/* STAT CARDS */
+.stats-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+margin-bottom: 12px;
+}
+
+.stat-card {
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 14px 12px;
+}
+
+.stat-label {
+font-size: 0.65rem;
+color: var(–muted);
+letter-spacing: 0.08em;
+text-transform: uppercase;
+margin-bottom: 4px;
+}
+
+.stat-value {
+font-family: ‘Syne’, sans-serif;
+font-size: 1.4rem;
+font-weight: 800;
+line-height: 1;
+}
+
+.stat-sub {
+font-size: 0.65rem;
+color: var(–muted);
+margin-top: 2px;
+}
+
+/* BREAK-EVEN BAR */
+.progress-wrap {
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 14px 12px;
+margin-bottom: 10px;
+}
+
+.progress-header {
+display: flex;
+justify-content: space-between;
+font-size: 0.7rem;
+color: var(–muted);
+margin-bottom: 8px;
+}
+
+.progress-bar-bg {
+background: var(–border);
+border-radius: 99px;
+height: 8px;
+overflow: hidden;
+}
+
+.progress-bar-fill {
+height: 100%;
+border-radius: 99px;
+transition: width 0.5s ease;
+}
+
+.verdict {
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 14px 12px;
+font-size: 0.85rem;
+line-height: 1.5;
+}
+
+.verdict .amount {
+font-family: ‘Syne’, sans-serif;
+font-size: 1.1rem;
+font-weight: 800;
+}
+
+.green { color: var(–good); }
+.orange { color: var(–accent-boulder); }
+.red { color: var(–danger); }
+
+/* LOG */
+.log-entry {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 8px 0;
+border-bottom: 1px solid var(–border);
+font-size: 0.8rem;
+}
+
+.log-entry:last-child { border-bottom: none; }
+
+.log-dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+margin-right: 10px;
+flex-shrink: 0;
+}
+
+.dot-klettern { background: var(–accent-climb); }
+.dot-bouldern { background: var(–accent-boulder); }
+
+.log-type { flex: 1; }
+.log-date { color: var(–muted); font-size: 0.7rem; }
+
+.empty-log {
+color: var(–muted);
+font-size: 0.8rem;
+text-align: center;
+padding: 20px 0;
+}
+
+/* DATE INPUT chrome fix */
+input[type=“date”]::-webkit-calendar-picker-indicator {
+filter: invert(0.5);
+}
+
+.badge {
+font-size: 0.65rem;
+padding: 2px 7px;
+border-radius: 99px;
+font-family: ‘Syne’, sans-serif;
+font-weight: 700;
+letter-spacing: 0.05em;
+}
+.badge-climb { background: rgba(200,245,90,0.15); color: var(–accent-climb); }
+.badge-boulder { background: rgba(245,166,35,0.15); color: var(–accent-boulder); }
+
+/* today btn */
+.date-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
+.date-row input { margin-bottom: 0; flex: 1; }
+.btn-today {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+color: var(–muted);
+font-family: ‘DM Mono’, monospace;
+font-size: 0.7rem;
+padding: 10px 10px;
+cursor: pointer;
+white-space: nowrap;
+transition: color 0.15s, border-color 0.15s;
+flex-shrink: 0;
+}
+.btn-today:hover { color: var(–text); border-color: var(–accent-climb); }
+
+/* IMPORT */
+textarea {
+width: 100%;
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 8px;
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+font-size: 0.8rem;
+padding: 10px 12px;
+margin-bottom: 10px;
+resize: vertical;
+min-height: 120px;
+line-height: 1.6;
+transition: border-color 0.15s;
+}
+textarea:focus { outline: none; border-color: var(–accent-climb); }
+textarea::placeholder { color: var(–muted); }
+
+.import-feedback {
+font-size: 0.75rem;
+margin-top: 8px;
+line-height: 1.6;
+min-height: 1em;
+}
+
+.import-ok { color: var(–good); }
+.import-warn { color: var(–accent-boulder); }
+.import-err { color: var(–danger); }
+
+details > summary {
+cursor: pointer;
+list-style: none;
+color: var(–muted);
+font-size: 0.75rem;
+letter-spacing: 0.05em;
+user-select: none;
+}
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary { color: var(–text); margin-bottom: 12px; }
+details > summary::before { content: ’▶ ’; font-size: 0.6rem; }
+details[open] > summary::before { content: ’▼ ’; }
+</style>
+
+</head>
+<body>
+
+<h1>Jahreskarte<br>Tracker 🧗</h1>
+<p class="subtitle">Lohnt sich das?</p>
+
+<!-- SETUP -->
+
+<div class="section" id="setup-section">
+  <div class="section-title">Jahreskarte</div>
+
+  <div class="grid2">
+    <div>
+      <label>Kosten (€)</label>
+      <input type="number" id="karte-preis" placeholder="z.B. 399" min="0" step="0.01">
+    </div>
+    <div></div>
+    <div>
+      <label>Gültig ab</label>
+      <input type="date" id="karte-start">
+    </div>
+    <div>
+      <label>Gültig bis</label>
+      <input type="date" id="karte-ende">
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>Tageskarte Klettern (€)</label>
+      <input type="number" id="preis-klettern" placeholder="z.B. 12.00" min="0" step="0.01">
+    </div>
+    <div>
+      <label>Tageskarte Bouldern (€)</label>
+      <input type="number" id="preis-bouldern" placeholder="z.B. 9.00" min="0" step="0.01">
+    </div>
+  </div>
+
+<button class="btn btn-save" onclick="saveConfig()">💾 Einstellungen speichern</button>
+
+</div>
+
+<!-- CHECK IN -->
+
+<div class="section">
+  <div class="section-title">Eincheck-en</div>
+
+<label>Datum</label>
+
+  <div class="date-row">
+    <input type="date" id="check-datum">
+    <button class="btn-today" onclick="setToday()">heute</button>
+  </div>
+
+  <div class="grid2">
+    <button class="btn btn-climb" onclick="addVisit('klettern')">🧗 Klettern</button>
+    <button class="btn btn-boulder" onclick="addVisit('bouldern')">🪨 Bouldern</button>
+  </div>
+</div>
+
+<!-- IMPORT -->
+
+<div class="section">
+  <details>
+    <summary>Massenimport</summary>
+    <label>Einträge einfügen — Format: <code>TT.MM.JJJJ&nbsp;&nbsp;K</code> oder <code>B</code></label>
+    <textarea id="import-text" placeholder="20.10.2025	b
+22.10.2025	k
+26.10.2025	k"></textarea>
+    <button class="btn btn-save" onclick="importVisits()">📥 Importieren</button>
+    <div class="import-feedback" id="import-feedback"></div>
+  </details>
+</div>
+
+<!-- STATS -->
+
+<div class="section" id="stats-section">
+  <div class="section-title">Auswertung</div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Besuche gesamt</div>
+      <div class="stat-value" id="stat-besuche">0</div>
+      <div class="stat-sub" id="stat-split">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">∅ Kosten/Besuch</div>
+      <div class="stat-value" id="stat-avg">–</div>
+      <div class="stat-sub" id="stat-avg-sub">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Erspart</div>
+      <div class="stat-value" id="stat-saved">–</div>
+      <div class="stat-sub">vs. Tageskarten</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Noch nötig</div>
+      <div class="stat-value" id="stat-needed">–</div>
+      <div class="stat-sub" id="stat-needed-sub">zum Break-even</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-header">
+      <span>Break-even</span>
+      <span id="progress-label">0 %</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict-box">
+    Noch keine Daten.
+  </div>
+</div>
+
+<!-- LOG -->
+
+<div class="section">
+  <div class="section-title">Verlauf</div>
+  <div id="log-list"><div class="empty-log">Noch keine Besuche eingetragen.</div></div>
+</div>
+
+<script>
+  // --- STATE ---
+  let config = {};
+  let visits = [];
+
+  function load() {
+    try { config = JSON.parse(localStorage.getItem('jk_config') || '{}'); } catch(e) { config = {}; }
+    try { visits = JSON.parse(localStorage.getItem('jk_visits') || '[]'); } catch(e) { visits = []; }
+  }
+
+  function save() {
+    localStorage.setItem('jk_config', JSON.stringify(config));
+    localStorage.setItem('jk_visits', JSON.stringify(visits));
+  }
+
+  // --- INIT ---
+  const PRESET_VISITS = [
+    {type:'bouldern', datum:'2025-10-20'},{type:'klettern', datum:'2025-10-22'},
+    {type:'klettern', datum:'2025-10-26'},{type:'klettern', datum:'2025-10-29'},
+    {type:'klettern', datum:'2025-11-05'},{type:'klettern', datum:'2025-11-16'},
+    {type:'bouldern', datum:'2025-11-24'},{type:'klettern', datum:'2025-11-25'},
+    {type:'klettern', datum:'2025-11-26'},{type:'bouldern', datum:'2025-11-28'},
+    {type:'klettern', datum:'2025-12-03'},{type:'bouldern', datum:'2025-12-06'},
+    {type:'bouldern', datum:'2025-12-07'},{type:'bouldern', datum:'2025-12-09'},
+    {type:'klettern', datum:'2025-12-13'},{type:'klettern', datum:'2025-12-14'},
+    {type:'klettern', datum:'2025-12-17'},{type:'klettern', datum:'2025-12-26'},
+    {type:'bouldern', datum:'2026-01-03'},{type:'klettern', datum:'2026-01-04'},
+    {type:'klettern', datum:'2026-01-06'},{type:'klettern', datum:'2026-01-07'},
+    {type:'klettern', datum:'2026-01-09'},{type:'klettern', datum:'2026-01-11'},
+    {type:'klettern', datum:'2026-01-18'},{type:'bouldern', datum:'2026-01-21'},
+    {type:'klettern', datum:'2026-01-22'},{type:'bouldern', datum:'2026-01-27'},
+    {type:'klettern', datum:'2026-01-28'},{type:'klettern', datum:'2026-02-02'},
+    {type:'klettern', datum:'2026-02-05'},{type:'klettern', datum:'2026-02-04'},
+    {type:'klettern', datum:'2026-02-15'},{type:'klettern', datum:'2026-02-25'},
+    {type:'klettern', datum:'2026-03-07'},{type:'klettern', datum:'2026-03-11'},
+  ].map((v, i) => ({...v, id: 1700000000000 + i}))
+   .sort((a, b) => b.datum.localeCompare(a.datum));
+
+  function init() {
+    load();
+    // Inject preset visits if storage is empty
+    if (visits.length === 0) {
+      visits = PRESET_VISITS;
+      save();
+    }
+    // Set today
+    setToday();
+    // Fill config fields
+    if (config.preis)    document.getElementById('karte-preis').value = config.preis;
+    if (config.start)    document.getElementById('karte-start').value = config.start;
+    if (config.ende)     document.getElementById('karte-ende').value = config.ende;
+    if (config.klettern) document.getElementById('preis-klettern').value = config.klettern;
+    if (config.bouldern) document.getElementById('preis-bouldern').value = config.bouldern;
+    render();
+  }
+
+  function setToday() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('check-datum').value = today;
+  }
+
+  // --- ACTIONS ---
+  function saveConfig() {
+    config.preis    = parseFloat(document.getElementById('karte-preis').value) || 0;
+    config.start    = document.getElementById('karte-start').value;
+    config.ende     = document.getElementById('karte-ende').value;
+    config.klettern = parseFloat(document.getElementById('preis-klettern').value) || 0;
+    config.bouldern = parseFloat(document.getElementById('preis-bouldern').value) || 0;
+    save();
+    render();
+    flashEl('setup-section');
+  }
+
+  function addVisit(type) {
+    const datum = document.getElementById('check-datum').value;
+    if (!datum) { alert('Bitte Datum wählen.'); return; }
+    visits.unshift({ type, datum, id: Date.now() });
+    save();
+    render();
+  }
+
+  function deleteVisit(id) {
+    visits = visits.filter(v => v.id !== id);
+    save();
+    render();
+  }
+
+  function importVisits() {
+    const raw = document.getElementById('import-text').value.trim();
+    const fb = document.getElementById('import-feedback');
+    if (!raw) { fb.innerHTML = '<span class="import-warn">Kein Text eingegeben.</span>'; return; }
+
+    const lines = raw.split('\n');
+    let added = 0, skipped = 0, errors = [];
+
+    // Build set of existing datums for duplicate check
+    const existing = new Set(visits.map(v => v.datum + '|' + v.type));
+
+    lines.forEach((line, idx) => {
+      const clean = line.trim();
+      if (!clean) return;
+
+      // Parse: DD.MM.YYYY<whitespace>K|B
+      const match = clean.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+([kKbB])$/);
+      if (!match) {
+        errors.push(`Zeile ${idx+1}: "${clean}"`);
+        return;
+      }
+
+      const [, dd, mm, yyyy, typeChar] = match;
+      // Validate date
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const d = new Date(dateStr + 'T12:00:00');
+      if (isNaN(d.getTime()) || d.getFullYear() < 2000 || d.getFullYear() > 2100) {
+        errors.push(`Zeile ${idx+1}: ungültiges Datum "${clean}"`);
+        return;
+      }
+
+      const type = typeChar.toLowerCase() === 'k' ? 'klettern' : 'bouldern';
+      const key = dateStr + '|' + type;
+
+      if (existing.has(key)) {
+        skipped++;
+        return;
+      }
+
+      visits.push({ type, datum: dateStr, id: Date.now() + Math.random() });
+      existing.add(key);
+      added++;
+    });
+
+    // Re-sort descending
+    visits.sort((a, b) => b.datum.localeCompare(a.datum));
+    save();
+    render();
+
+    // Feedback
+    let msg = '';
+    if (added > 0) msg += `<span class="import-ok">✓ ${added} Einträge importiert.</span> `;
+    if (skipped > 0) msg += `<span class="import-warn">${skipped} Duplikate übersprungen.</span> `;
+    if (errors.length > 0) msg += `<span class="import-err">⚠ ${errors.length} Fehler: ${errors.join(', ')}</span>`;
+    fb.innerHTML = msg || '<span class="import-ok">✓ Alles importiert.</span>';
+
+    if (added > 0) document.getElementById('import-text').value = '';
+  }
+
+  // --- RENDER ---
+  function render() {
+    const kartePreis = config.preis || 0;
+    const preisK = config.klettern || 0;
+    const preisB = config.bouldern || 0;
+
+    const anzahlK = visits.filter(v => v.type === 'klettern').length;
+    const anzahlB = visits.filter(v => v.type === 'bouldern').length;
+    const total = visits.length;
+
+    // What would have been paid without card
+    const ohneKarte = anzahlK * preisK + anzahlB * preisB;
+    const gespart = ohneKarte - kartePreis;
+    const avgKosten = total > 0 ? (kartePreis / total) : 0;
+
+    // Break-even: how many visits needed
+    // We use average price per visit type (weighted if mixed, else fallback)
+    let avgPreisProBesuch = 0;
+    if (total > 0) {
+      avgPreisProBesuch = ohneKarte / total;
+    } else {
+      // Estimate from config
+      const prices = [preisK, preisB].filter(p => p > 0);
+      avgPreisProBesuch = prices.length > 0 ? prices.reduce((a,b) => a+b, 0) / prices.length : 10;
+    }
+
+    const breakEvenBesuche = avgPreisProBesuch > 0 ? Math.ceil(kartePreis / avgPreisProBesuch) : 0;
+    const nochNoetig = Math.max(0, breakEvenBesuche - total);
+    const progress = breakEvenBesuche > 0 ? Math.min(100, Math.round(total / breakEvenBesuche * 100)) : 0;
+
+    // Fill stats
+    document.getElementById('stat-besuche').textContent = total;
+    document.getElementById('stat-split').textContent =
+      total > 0 ? `${anzahlK}× Klettern · ${anzahlB}× Bouldern` : '–';
+
+    document.getElementById('stat-avg').textContent = total > 0 ? `${fmt(avgKosten)} €` : '–';
+    document.getElementById('stat-avg-sub').textContent = total > 0 ? `effektiv/Besuch` : '–';
+
+    const savedEl = document.getElementById('stat-saved');
+    savedEl.textContent = kartePreis > 0 ? `${fmt(Math.abs(gespart))} €` : '–';
+    savedEl.className = 'stat-value ' + (gespart >= 0 ? 'green' : 'red');
+
+    document.getElementById('stat-needed').textContent = breakEvenBesuche > 0 ? nochNoetig : '–';
+    document.getElementById('stat-needed-sub').textContent = breakEvenBesuche > 0
+      ? `von ${breakEvenBesuche} gesamt nötig`
+      : 'zum Break-even';
+
+    // Progress bar
+    document.getElementById('progress-label').textContent = `${progress} %`;
+    const fill = document.getElementById('progress-fill');
+    fill.style.width = progress + '%';
+    fill.style.background = progress >= 100
+      ? 'var(--good)'
+      : progress >= 60
+        ? 'var(--accent-climb)'
+        : 'var(--accent-boulder)';
+
+    // Verdict
+    const vBox = document.getElementById('verdict-box');
+    if (kartePreis === 0) {
+      vBox.innerHTML = `<span class="muted">Jahreskarte noch nicht konfiguriert.</span>`;
+    } else if (total === 0) {
+      vBox.innerHTML = `Noch kein Besuch eingetragen. Break-even bei <span class="amount">${breakEvenBesuche} Besuchen</span>.`;
+    } else if (gespart > 0) {
+      vBox.innerHTML = `✅ <span class="amount green">${fmt(gespart)} €</span> gespart — die Jahreskarte hat sich gelohnt!`;
+    } else if (nochNoetig === 0) {
+      vBox.innerHTML = `✅ Break-even erreicht! Jeder weitere Besuch spart <span class="amount green">${fmt(avgPreisProBesuch)} €</span>.`;
+    } else {
+      // Time remaining
+      let zeitHinweis = '';
+      if (config.ende) {
+        const tageRest = Math.ceil((new Date(config.ende) - new Date()) / 86400000);
+        if (tageRest > 0) {
+          const noetigProWoche = (nochNoetig / (tageRest / 7)).toFixed(1);
+          zeitHinweis = ` (noch ${tageRest} Tage, ~${noetigProWoche}×/Woche)`;
+        } else {
+          zeitHinweis = ` — Jahreskarte abgelaufen`;
+        }
+      }
+      vBox.innerHTML = `⚠️ Noch <span class="amount orange">${nochNoetig} Besuche</span> bis Break-even${zeitHinweis}.`;
+    }
+
+    // Log
+    renderLog();
+  }
+
+  function renderLog() {
+    const el = document.getElementById('log-list');
+    if (visits.length === 0) {
+      el.innerHTML = `<div class="empty-log">Noch keine Besuche eingetragen.</div>`;
+      return;
+    }
+    el.innerHTML = visits.map(v => `
+      <div class="log-entry">
+        <div class="log-dot ${v.type === 'klettern' ? 'dot-klettern' : 'dot-bouldern'}"></div>
+        <div class="log-type">
+          <span class="badge ${v.type === 'klettern' ? 'badge-climb' : 'badge-boulder'}">
+            ${v.type === 'klettern' ? 'Klettern' : 'Bouldern'}
+          </span>
+        </div>
+        <div class="log-date">${formatDate(v.datum)}</div>
+        <button class="btn-delete" onclick="deleteVisit(${v.id})" title="Löschen">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function fmt(n) {
+    return Number(n).toFixed(2).replace('.', ',');
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '–';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  function flashEl(id) {
+    const el = document.getElementById(id);
+    el.style.borderColor = 'var(--accent-climb)';
+    setTimeout(() => { el.style.borderColor = ''; }, 800);
+  }
+
+  init();
+</script>
+
+</body>
+</html>
