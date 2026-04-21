@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IBP MCP Test UI</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #1a1a1a; padding: 2rem; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .server-url { font-size: 11px; font-family: monospace; color: #666; margin-bottom: 1.5rem; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; }
+  .tab { padding: 8px 16px; font-size: 13px; cursor: pointer; border: none; background: none; color: #666; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 7px 10px; font-size: 13px;
+    border: 1px solid #ccc; border-radius: 6px; background: #fff;
+    font-family: inherit; color: #1a1a1a;
+  }
+  .field textarea { font-family: monospace; font-size: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .run-btn {
+    margin-top: 8px; padding: 8px 20px; font-size: 13px; cursor: pointer;
+    border: 1px solid #aaa; border-radius: 6px; background: #fff;
+    font-weight: 500;
+  }
+  .run-btn:hover { background: #f0f0f0; }
+  .status { font-size: 12px; margin-top: 8px; height: 18px; }
+  .status.ok { color: #2d7a2d; }
+  .status.err { color: #c0392b; }
+  .status.loading { color: #888; }
+  .result-box {
+    margin-top: 1rem; background: #f8f8f8; border: 1px solid #ddd;
+    border-radius: 6px; padding: 1rem; font-size: 12px;
+    font-family: monospace; white-space: pre-wrap;
+    max-height: 300px; overflow-y: auto;
+  }
+  .kf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 1rem; }
+  .kf-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 1rem; }
+  .kf-label { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .kf-name { font-size: 11px; font-family: monospace; color: #666; margin-bottom: 6px; }
+  .kf-desc { font-size: 12px; color: #555; margin-bottom: 8px; line-height: 1.5; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+  .badge-forecast { background: #dbeafe; color: #1e40af; }
+  .badge-actuals { background: #dcfce7; color: #166534; }
+  .badge-inventory { background: #fef3c7; color: #92400e; }
+  .badge-other { background: #f3f4f6; color: #374151; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding: 0 4px; margin-top: 1rem; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; background: #2563eb; }
+  .bar-val { font-size: 11px; color: #555; }
+  .bar-lbl { font-size: 10px; color: #888; margin-top: 4px; }
+  .delta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 1rem; }
+  .delta-card { background: #f8f8f8; border-radius: 6px; padding: 10px 12px; }
+  .delta-period { font-size: 11px; color: #666; margin-bottom: 4px; }
+  .delta-up { color: #c0392b; }
+  .delta-dn { color: #2d7a2d; }
+  .container { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 2rem; border: 1px solid #ddd; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>SAP IBP — MCP Server Test UI</h1>
+  <div class="server-url" id="srv">▸ https://btp-mcp-server-balanced-llama-rg.cfapps.ap21.hana.ondemand.com/mcp</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('catalog', this)">get_keyfigure_catalog</button>
+    <button class="tab" onclick="switchTab('read', this)">read_planning_data</button>
+    <button class="tab" onclick="switchTab('sim', this)">simulate_forecast_change</button>
+  </div>
+
+  <!-- CATALOG -->
+  <div id="panel-catalog" class="panel active">
+    <div class="field">
+      <label>category (optional)</label>
+      <select id="cat-filter">
+        <option value="">all</option>
+        <option value="forecast">forecast</option>
+        <option value="actuals">actuals</option>
+        <option value="inventory">inventory</option>
+        <option value="other">other</option>
+      </select>
+    </div>
+    <button class="run-btn" onclick="runCatalog()">▶ Run tool</button>
+    <div class="status" id="cat-status"></div>
+    <div id="cat-result"></div>
+  </div>
+
+  <!-- READ -->
+  <div id="panel-read" class="panel">
+    <div class="row">
+      <div class="field">
+        <label>keyFigure *</label>
+        <input id="rd-kf" type="text" value="FINALDEMANDQTY" />
+      </div>
+      <div class="field">
+        <label>planningArea (optional)</label>
+        <input id="rd-pa" type="text" placeholder="e.g. SAP9" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>product</label>
+        <input id="rd-prod" type="text" value="P-100" />
+      </div>
+      <div class="field">
+        <label>location</label>
+        <input id="rd-loc" type="text" value="WH-DE" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>startPeriod (YYYY-MM)</label>
+        <input id="rd-start" type="text" value="2025-01" />
+      </div>
+      <div class="field">
+        <label>endPeriod (YYYY-MM)</label>
+        <input id="rd-end" type="text" value="2025-06" />
+      </div>
+    </div>
+    <button class="run-btn" onclick="runRead()">▶ Run tool</button>
+    <div class="status" id="rd-status"></div>
+    <div id="rd-result"></div>
+  </div>
+
+  <!-- SIMULATE -->
+  <div id="panel-sim" class="panel">
+    <div class="row">
+      <div class="field">
+        <label>adjustmentType</label>
+        <select id="sim-type">
+          <option value="percentage">percentage</option>
+          <option value="absolute">absolute</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>adjustmentValue</label>
+        <input id="sim-val" type="number" value="10" />
+      </div>
+    </div>
+    <div class="field">
+      <label>periods JSON</label>
+      <textarea id="sim-periods" rows="8">[
+  {"period":"2025-01","value":1200},
+  {"period":"2025-02","value":1280},
+  {"period":"2025-03","value":1310},
+  {"period":"2025-04","value":1290},
+  {"period":"2025-05","value":1340},
+  {"period":"2025-06","value":1370}
+]</textarea>
+    </div>
+    <button class="run-btn" onclick="runSim()">▶ Run tool</button>
+    <div class="status" id="sim-status"></div>
+    <div id="sim-result"></div>
+  </div>
+</div>
+
+<script>
+const BASE = 'https://btp-mcp-server-balanced-llama-rg.cfapps.ap21.hana.ondemand.com/mcp';
+let sessionId = null;
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+async function mcpCall(toolName, args) {
+  // Initialize session if needed
+  if (!sessionId) {
+    const initResp = await fetch(BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream'
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 1, method: 'initialize',
+        params: {
+          protocolVersion: '2024-11-05',
+          capabilities: {},
+          clientInfo: { name: 'ibp-test-ui', version: '1.0' }
+        }
+      })
+    });
+    const sid = initResp.headers.get('mcp-session-id') || initResp.headers.get('Mcp-Session-Id');
+    if (sid) sessionId = sid;
+    await initResp.text();
+  }
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream'
+  };
+  if (sessionId) headers['Mcp-Session-Id'] = sessionId;
+
+  const resp = await fetch(BASE, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: Date.now(),
+      method: 'tools/call',
+      params: { name: toolName, arguments: args }
+    })
+  });
+
+  const text = await resp.text();
+  let parsed;
+  if (text.trim().startsWith('data:')) {
+    const lines = text.split('\n').filter(l => l.startsWith('data:') && l.length > 6);
+    const last = lines[lines.length - 1].replace(/^data:\s*/, '');
+    parsed = JSON.parse(last);
+  } else {
+    parsed = JSON.parse(text);
+  }
+
+  if (parsed.error) throw new Error(parsed.error.message || JSON.stringify(parsed.error));
+  const content = parsed.result?.content?.[0]?.text;
+  return JSON.parse(content);
+}
+
+async function runCatalog() {
+  setStatus('cat-status', 'calling tool…', 'loading');
+  document.getElementById('cat-result').innerHTML = '';
+  try {
+    const cat = document.getElementById('cat-filter').value;
+    const data = await mcpCall('ibp.get_keyfigure_catalog', cat ? { category: cat } : {});
+    setStatus('cat-status', `✓ returned ${data.length} key figure(s)`, 'ok');
+    let html = '<div class="kf-grid">';
+    data.forEach(kf => {
+      html += `<div class="kf-card">
+        <div class="kf-label">${kf.label}</div>
+        <div class="kf-name">${kf.name}</div>
+        <div class="kf-desc">${kf.description}</div>
+        <span class="badge badge-${kf.category}">${kf.category}</span>
+        <span style="font-size:11px;color:#888;margin-left:6px;">${kf.unit} · ${kf.editable ? 'editable' : 'read-only'}</span>
+      </div>`;
+    });
+    html += '</div>';
+    document.getElementById('cat-result').innerHTML = html;
+  } catch(e) {
+    setStatus('cat-status', '✗ ' + e.message, 'err');
+  }
+}
+
+async function runRead() {
+  setStatus('rd-status', 'calling tool…', 'loading');
+  document.getElementById('rd-result').innerHTML = '';
+  try {
+    const args = {
+      keyFigure: document.getElementById('rd-kf').value,
+      startPeriod: document.getElementById('rd-start').value,
+      endPeriod: document.getElementById('rd-end').value,
+    };
+    const pa = document.getElementById('rd-pa').value;
+    const prod = document.getElementById('rd-prod').value;
+    const loc = document.getElementById('rd-loc').value;
+    if (pa) args.planningArea = pa;
+    if (prod) args.product = prod;
+    if (loc) args.location = loc;
+
+    const data = await mcpCall('ibp.read_planning_data', args);
+    setStatus('rd-status', `✓ returned ${data.periods.length} period(s)`, 'ok');
+
+    const vals = data.periods.map(p => p.value ?? 0);
+    const maxV = Math.max(...vals);
+
+    let html = '<div class="chart-bars">';
+    data.periods.forEach(p => {
+      const pct = maxV ? Math.round((p.value / maxV) * 100) : 0;
+      html += `<div class="bar-wrap">
+        <div class="bar-val">${p.value ?? '—'}</div>
+        <div class="bar" style="height:${pct}%"></div>
+        <div class="bar-lbl">${p.period.slice(5)}</div>
+      </div>`;
+    });
+    html += '</div>';
+    html += `<pre class="result-box">${JSON.stringify(data, null, 2)}</pre>`;
+    document.getElementById('rd-result').innerHTML = html;
+  } catch(e) {
+    setStatus('rd-status', '✗ ' + e.message, 'err');
+  }
+}
+
+async function runSim() {
+  setStatus('sim-status', 'calling tool…', 'loading');
+  document.getElementById('sim-result').innerHTML = '';
+  try {
+    const periods = JSON.parse(document.getElementById('sim-periods').value);
+    const args = {
+      periods,
+      adjustmentType: document.getElementById('sim-type').value,
+      adjustmentValue: parseFloat(document.getElementById('sim-val').value)
+    };
+    const data = await mcpCall('ibp.simulate_forecast_change', args);
+    setStatus('sim-status', `✓ simulated ${data.newValues.length} period(s)`, 'ok');
+
+    let html = '<div class="delta-grid">';
+    data.newValues.forEach((nv, i) => {
+      const ov = data.oldValues[i];
+      const dv = data.deltaValues[i];
+      const up = dv.value > 0;
+      html += `<div class="delta-card">
+        <div class="delta-period">${nv.period}</div>
+        <div style="font-size:13px;">
+          <span style="color:#888">${ov.value}</span>
+          <span style="margin:0 4px;">→</span>
+          <span style="font-weight:600">${nv.value}</span>
+          <span class="${up ? 'delta-up' : 'delta-dn'}" style="font-size:11px;margin-left:4px;">${up ? '+' : ''}${dv.value}</span>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+    document.getElementById('sim-result').innerHTML = html;
+  } catch(e) {
+    setStatus('sim-status', '✗ ' + e.message, 'err');
+  }
+}
+</script>
+</body>
+</html>
