@@ -176,8 +176,26 @@ function setStatus(id, msg, type) {
   el.className = 'status ' + type;
 }
 
+function parseSSEorJSON(text) {
+  const trimmed = text.trim();
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    const parsed = JSON.parse(trimmed);
+    if (parsed.error) throw new Error(parsed.error.message || JSON.stringify(parsed.error));
+    return JSON.parse(parsed.result?.content?.[0]?.text);
+  }
+  const dataLines = trimmed
+    .split('\n')
+    .filter(l => l.startsWith('data:'))
+    .map(l => l.replace(/^data:\s*/, '').trim())
+    .filter(l => l.length > 0 && l !== '[DONE]');
+  if (dataLines.length === 0) throw new Error('No data in SSE response: ' + trimmed.slice(0, 120));
+  const last = dataLines[dataLines.length - 1];
+  const parsed = JSON.parse(last);
+  if (parsed.error) throw new Error(parsed.error.message || JSON.stringify(parsed.error));
+  return JSON.parse(parsed.result?.content?.[0]?.text);
+}
+
 async function mcpCall(toolName, args) {
-  // Initialize session if needed
   if (!sessionId) {
     const initResp = await fetch(BASE, {
       method: 'POST',
@@ -196,7 +214,13 @@ async function mcpCall(toolName, args) {
     });
     const sid = initResp.headers.get('mcp-session-id') || initResp.headers.get('Mcp-Session-Id');
     if (sid) sessionId = sid;
-    await initResp.text();
+    const initText = await initResp.text();
+    if (!sessionId) {
+      const dataLines = initText.split('\n').filter(l => l.startsWith('data:')).map(l => l.replace(/^data:\s*/,'').trim()).filter(l => l.length > 0);
+      if (dataLines.length > 0) {
+        try { const j = JSON.parse(dataLines[dataLines.length-1]); if (j?.id) sessionId = String(j.id); } catch(e) {}
+      }
+    }
   }
 
   const headers = {
@@ -217,18 +241,7 @@ async function mcpCall(toolName, args) {
   });
 
   const text = await resp.text();
-  let parsed;
-  if (text.trim().startsWith('data:')) {
-    const lines = text.split('\n').filter(l => l.startsWith('data:') && l.length > 6);
-    const last = lines[lines.length - 1].replace(/^data:\s*/, '');
-    parsed = JSON.parse(last);
-  } else {
-    parsed = JSON.parse(text);
-  }
-
-  if (parsed.error) throw new Error(parsed.error.message || JSON.stringify(parsed.error));
-  const content = parsed.result?.content?.[0]?.text;
-  return JSON.parse(content);
+  return parseSSEorJSON(text);
 }
 
 async function runCatalog() {
