@@ -1,735 +1,232 @@
 <!DOCTYPE html>
-
-<html lang="de">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jahreskarte Tracker</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IBP MCP Test UI</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
-
-:root {
-–bg: #0f0f0f;
-–surface: #1a1a1a;
-–surface2: #222;
-–border: #2e2e2e;
-–text: #f0ece3;
-–muted: #666;
-–accent-climb: #c8f55a;
-–accent-boulder: #f5a623;
-–danger: #ff5c5c;
-–good: #5cffa0;
-}
-
-- { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-background: var(–bg);
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
-min-height: 100vh;
-padding: 24px 16px 80px;
-max-width: 540px;
-margin: 0 auto;
-}
-
-h1 {
-font-family: ‘Syne’, sans-serif;
-font-size: 2rem;
-font-weight: 800;
-letter-spacing: -0.02em;
-line-height: 1;
-margin-bottom: 4px;
-}
-
-.subtitle {
-color: var(–muted);
-font-size: 0.75rem;
-margin-bottom: 32px;
-}
-
-/* SECTIONS */
-.section {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 12px;
-padding: 20px;
-margin-bottom: 16px;
-}
-
-.section-title {
-font-family: ‘Syne’, sans-serif;
-font-size: 0.7rem;
-font-weight: 700;
-letter-spacing: 0.12em;
-text-transform: uppercase;
-color: var(–muted);
-margin-bottom: 16px;
-}
-
-/* FORM ELEMENTS */
-label {
-display: block;
-font-size: 0.7rem;
-color: var(–muted);
-margin-bottom: 5px;
-letter-spacing: 0.05em;
-}
-
-input[type=“number”], input[type=“date”] {
-width: 100%;
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 8px;
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
-font-size: 0.95rem;
-padding: 10px 12px;
-margin-bottom: 12px;
-transition: border-color 0.15s;
--webkit-appearance: none;
-}
-
-input:focus {
-outline: none;
-border-color: var(–accent-climb);
-}
-
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* BUTTONS */
-.btn {
-display: block;
-width: 100%;
-border: none;
-border-radius: 10px;
-font-family: ‘Syne’, sans-serif;
-font-weight: 700;
-font-size: 1rem;
-padding: 14px;
-cursor: pointer;
-transition: transform 0.1s, opacity 0.15s;
-letter-spacing: 0.02em;
-}
-.btn:active { transform: scale(0.97); }
-
-.btn-climb {
-background: var(–accent-climb);
-color: #0f0f0f;
-}
-.btn-boulder {
-background: var(–accent-boulder);
-color: #0f0f0f;
-}
-.btn-save {
-background: var(–surface2);
-color: var(–text);
-border: 1px solid var(–border);
-font-size: 0.85rem;
-margin-top: 4px;
-}
-.btn-save:hover { border-color: var(–accent-climb); }
-.btn-delete {
-background: none;
-border: none;
-color: var(–muted);
-cursor: pointer;
-font-size: 0.8rem;
-padding: 2px 6px;
-transition: color 0.15s;
-}
-.btn-delete:hover { color: var(–danger); }
-
-/* STAT CARDS */
-.stats-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 10px;
-margin-bottom: 12px;
-}
-
-.stat-card {
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 10px;
-padding: 14px 12px;
-}
-
-.stat-label {
-font-size: 0.65rem;
-color: var(–muted);
-letter-spacing: 0.08em;
-text-transform: uppercase;
-margin-bottom: 4px;
-}
-
-.stat-value {
-font-family: ‘Syne’, sans-serif;
-font-size: 1.4rem;
-font-weight: 800;
-line-height: 1;
-}
-
-.stat-sub {
-font-size: 0.65rem;
-color: var(–muted);
-margin-top: 2px;
-}
-
-/* BREAK-EVEN BAR */
-.progress-wrap {
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 10px;
-padding: 14px 12px;
-margin-bottom: 10px;
-}
-
-.progress-header {
-display: flex;
-justify-content: space-between;
-font-size: 0.7rem;
-color: var(–muted);
-margin-bottom: 8px;
-}
-
-.progress-bar-bg {
-background: var(–border);
-border-radius: 99px;
-height: 8px;
-overflow: hidden;
-}
-
-.progress-bar-fill {
-height: 100%;
-border-radius: 99px;
-transition: width 0.5s ease;
-}
-
-.verdict {
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 10px;
-padding: 14px 12px;
-font-size: 0.85rem;
-line-height: 1.5;
-}
-
-.verdict .amount {
-font-family: ‘Syne’, sans-serif;
-font-size: 1.1rem;
-font-weight: 800;
-}
-
-.green { color: var(–good); }
-.orange { color: var(–accent-boulder); }
-.red { color: var(–danger); }
-
-/* LOG */
-.log-entry {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 8px 0;
-border-bottom: 1px solid var(–border);
-font-size: 0.8rem;
-}
-
-.log-entry:last-child { border-bottom: none; }
-
-.log-dot {
-width: 8px;
-height: 8px;
-border-radius: 50%;
-margin-right: 10px;
-flex-shrink: 0;
-}
-
-.dot-klettern { background: var(–accent-climb); }
-.dot-bouldern { background: var(–accent-boulder); }
-
-.log-type { flex: 1; }
-.log-date { color: var(–muted); font-size: 0.7rem; }
-
-.empty-log {
-color: var(–muted);
-font-size: 0.8rem;
-text-align: center;
-padding: 20px 0;
-}
-
-/* DATE INPUT chrome fix */
-input[type=“date”]::-webkit-calendar-picker-indicator {
-filter: invert(0.5);
-}
-
-.badge {
-font-size: 0.65rem;
-padding: 2px 7px;
-border-radius: 99px;
-font-family: ‘Syne’, sans-serif;
-font-weight: 700;
-letter-spacing: 0.05em;
-}
-.badge-climb { background: rgba(200,245,90,0.15); color: var(–accent-climb); }
-.badge-boulder { background: rgba(245,166,35,0.15); color: var(–accent-boulder); }
-
-/* today btn */
-.date-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
-.date-row input { margin-bottom: 0; flex: 1; }
-.btn-today {
-background: var(–surface2);
-border: 1px solid var(–border);
-border-radius: 8px;
-color: var(–muted);
-font-family: ‘DM Mono’, monospace;
-font-size: 0.7rem;
-padding: 10px 10px;
-cursor: pointer;
-white-space: nowrap;
-transition: color 0.15s, border-color 0.15s;
-flex-shrink: 0;
-}
-.btn-today:hover { color: var(–text); border-color: var(–accent-climb); }
-
-/* IMPORT */
-textarea {
-width: 100%;
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 8px;
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
-font-size: 0.8rem;
-padding: 10px 12px;
-margin-bottom: 10px;
-resize: vertical;
-min-height: 120px;
-line-height: 1.6;
-transition: border-color 0.15s;
-}
-textarea:focus { outline: none; border-color: var(–accent-climb); }
-textarea::placeholder { color: var(–muted); }
-
-.import-feedback {
-font-size: 0.75rem;
-margin-top: 8px;
-line-height: 1.6;
-min-height: 1em;
-}
-
-.import-ok { color: var(–good); }
-.import-warn { color: var(–accent-boulder); }
-.import-err { color: var(–danger); }
-
-details > summary {
-cursor: pointer;
-list-style: none;
-color: var(–muted);
-font-size: 0.75rem;
-letter-spacing: 0.05em;
-user-select: none;
-}
-details > summary::-webkit-details-marker { display: none; }
-details[open] > summary { color: var(–text); margin-bottom: 12px; }
-details > summary::before { content: ’▶ ’; font-size: 0.6rem; }
-details[open] > summary::before { content: ’▼ ’; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #1a1a1a; padding: 2rem; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .server-url { font-size: 11px; font-family: monospace; color: #666; margin-bottom: 1.5rem; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; }
+  .tab { padding: 8px 16px; font-size: 13px; cursor: pointer; border: none; background: none; color: #666; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 7px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-family: inherit; color: #1a1a1a; }
+  .field textarea { font-family: monospace; font-size: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .run-btn { margin-top: 8px; padding: 8px 20px; font-size: 13px; cursor: pointer; border: 1px solid #aaa; border-radius: 6px; background: #fff; font-weight: 500; }
+  .run-btn:hover { background: #f0f0f0; }
+  .status { font-size: 12px; margin-top: 8px; height: 18px; }
+  .status.ok { color: #2d7a2d; }
+  .status.err { color: #c0392b; }
+  .status.loading { color: #888; }
+  .result-box { margin-top: 1rem; background: #f8f8f8; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; font-size: 12px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+  .kf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 1rem; }
+  .kf-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 1rem; }
+  .kf-label { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .kf-name { font-size: 11px; font-family: monospace; color: #666; margin-bottom: 6px; }
+  .kf-desc { font-size: 12px; color: #555; margin-bottom: 8px; line-height: 1.5; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+  .badge-forecast { background: #dbeafe; color: #1e40af; }
+  .badge-actuals { background: #dcfce7; color: #166534; }
+  .badge-inventory { background: #fef3c7; color: #92400e; }
+  .badge-other { background: #f3f4f6; color: #374151; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding: 0 4px; margin-top: 1rem; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; background: #2563eb; }
+  .bar-val { font-size: 11px; color: #555; }
+  .bar-lbl { font-size: 10px; color: #888; margin-top: 4px; }
+  .delta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 1rem; }
+  .delta-card { background: #f8f8f8; border-radius: 6px; padding: 10px 12px; }
+  .delta-period { font-size: 11px; color: #666; margin-bottom: 4px; }
+  .delta-up { color: #c0392b; }
+  .delta-dn { color: #2d7a2d; }
+  .container { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 2rem; border: 1px solid #ddd; }
+  nav { max-width: 860px; margin: 0 auto 1rem; font-size: 13px; }
+  nav a { color: #2563eb; text-decoration: none; margin-right: 12px; }
 </style>
-
 </head>
 <body>
+<div class="container">
+  <nav><a href="/index.html">Test UI</a><a href="/agent.html">Agent</a></nav>
+  <h1>SAP IBP — MCP Server Test UI</h1>
+  <div class="server-url">MCP: /mcp (same origin)</div>
 
-<h1>Jahreskarte<br>Tracker 🧗</h1>
-<p class="subtitle">Lohnt sich das?</p>
-
-<!-- SETUP -->
-
-<div class="section" id="setup-section">
-  <div class="section-title">Jahreskarte</div>
-
-  <div class="grid2">
-    <div>
-      <label>Kosten (€)</label>
-      <input type="number" id="karte-preis" placeholder="z.B. 399" min="0" step="0.01">
-    </div>
-    <div></div>
-    <div>
-      <label>Gültig ab</label>
-      <input type="date" id="karte-start">
-    </div>
-    <div>
-      <label>Gültig bis</label>
-      <input type="date" id="karte-ende">
-    </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('catalog', this)">get_keyfigure_catalog</button>
+    <button class="tab" onclick="switchTab('read', this)">read_planning_data</button>
+    <button class="tab" onclick="switchTab('sim', this)">simulate_forecast_change</button>
   </div>
 
-  <div class="grid2">
-    <div>
-      <label>Tageskarte Klettern (€)</label>
-      <input type="number" id="preis-klettern" placeholder="z.B. 12.00" min="0" step="0.01">
+  <div id="panel-catalog" class="panel active">
+    <div class="field">
+      <label>category (optional)</label>
+      <select id="cat-filter">
+        <option value="">all</option>
+        <option value="forecast">forecast</option>
+        <option value="actuals">actuals</option>
+        <option value="inventory">inventory</option>
+        <option value="other">other</option>
+      </select>
     </div>
-    <div>
-      <label>Tageskarte Bouldern (€)</label>
-      <input type="number" id="preis-bouldern" placeholder="z.B. 9.00" min="0" step="0.01">
-    </div>
+    <button class="run-btn" onclick="runCatalog()">Run tool</button>
+    <div class="status" id="cat-status"></div>
+    <div id="cat-result"></div>
   </div>
 
-<button class="btn btn-save" onclick="saveConfig()">💾 Einstellungen speichern</button>
-
-</div>
-
-<!-- CHECK IN -->
-
-<div class="section">
-  <div class="section-title">Eincheck-en</div>
-
-<label>Datum</label>
-
-  <div class="date-row">
-    <input type="date" id="check-datum">
-    <button class="btn-today" onclick="setToday()">heute</button>
+  <div id="panel-read" class="panel">
+    <div class="row">
+      <div class="field"><label>keyFigure *</label><input id="rd-kf" type="text" value="FINALDEMANDQTY" /></div>
+      <div class="field"><label>planningArea</label><input id="rd-pa" type="text" placeholder="QHASAPIBP" /></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>product</label><input id="rd-prod" type="text" placeholder="optional" /></div>
+      <div class="field"><label>location</label><input id="rd-loc" type="text" placeholder="optional" /></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>startPeriod (YYYY-MM)</label><input id="rd-start" type="text" value="2025-01" /></div>
+      <div class="field"><label>endPeriod (YYYY-MM)</label><input id="rd-end" type="text" value="2025-06" /></div>
+    </div>
+    <button class="run-btn" onclick="runRead()">Run tool</button>
+    <div class="status" id="rd-status"></div>
+    <div id="rd-result"></div>
   </div>
 
-  <div class="grid2">
-    <button class="btn btn-climb" onclick="addVisit('klettern')">🧗 Klettern</button>
-    <button class="btn btn-boulder" onclick="addVisit('bouldern')">🪨 Bouldern</button>
+  <div id="panel-sim" class="panel">
+    <div class="row">
+      <div class="field"><label>adjustmentType</label><select id="sim-type"><option value="percentage">percentage</option><option value="absolute">absolute</option></select></div>
+      <div class="field"><label>adjustmentValue</label><input id="sim-val" type="number" value="10" /></div>
+    </div>
+    <div class="field">
+      <label>periods JSON</label>
+      <textarea id="sim-periods" rows="8">[
+  {"period":"2025-01","value":1200},
+  {"period":"2025-02","value":1280},
+  {"period":"2025-03","value":1310},
+  {"period":"2025-04","value":1290},
+  {"period":"2025-05","value":1340},
+  {"period":"2025-06","value":1370}
+]</textarea>
+    </div>
+    <button class="run-btn" onclick="runSim()">Run tool</button>
+    <div class="status" id="sim-status"></div>
+    <div id="sim-result"></div>
   </div>
-</div>
-
-<!-- IMPORT -->
-
-<div class="section">
-  <details>
-    <summary>Massenimport</summary>
-    <label>Einträge einfügen — Format: <code>TT.MM.JJJJ&nbsp;&nbsp;K</code> oder <code>B</code></label>
-    <textarea id="import-text" placeholder="20.10.2025	b
-22.10.2025	k
-26.10.2025	k"></textarea>
-    <button class="btn btn-save" onclick="importVisits()">📥 Importieren</button>
-    <div class="import-feedback" id="import-feedback"></div>
-  </details>
-</div>
-
-<!-- STATS -->
-
-<div class="section" id="stats-section">
-  <div class="section-title">Auswertung</div>
-
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">Besuche gesamt</div>
-      <div class="stat-value" id="stat-besuche">0</div>
-      <div class="stat-sub" id="stat-split">–</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">∅ Kosten/Besuch</div>
-      <div class="stat-value" id="stat-avg">–</div>
-      <div class="stat-sub" id="stat-avg-sub">–</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Erspart</div>
-      <div class="stat-value" id="stat-saved">–</div>
-      <div class="stat-sub">vs. Tageskarten</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Noch nötig</div>
-      <div class="stat-value" id="stat-needed">–</div>
-      <div class="stat-sub" id="stat-needed-sub">zum Break-even</div>
-    </div>
-  </div>
-
-  <div class="progress-wrap">
-    <div class="progress-header">
-      <span>Break-even</span>
-      <span id="progress-label">0 %</span>
-    </div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-    </div>
-  </div>
-
-  <div class="verdict" id="verdict-box">
-    Noch keine Daten.
-  </div>
-</div>
-
-<!-- LOG -->
-
-<div class="section">
-  <div class="section-title">Verlauf</div>
-  <div id="log-list"><div class="empty-log">Noch keine Besuche eingetragen.</div></div>
 </div>
 
 <script>
-  // --- STATE ---
-  let config = {};
-  let visits = [];
+const BASE = '/mcp';
+let sessionId = null;
 
-  function load() {
-    try { config = JSON.parse(localStorage.getItem('jk_config') || '{}'); } catch(e) { config = {}; }
-    try { visits = JSON.parse(localStorage.getItem('jk_visits') || '[]'); } catch(e) { visits = []; }
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+function parseSSEorJSON(text) {
+  const t = text.trim();
+  if (t.startsWith('{') || t.startsWith('[')) {
+    const p = JSON.parse(t);
+    if (p.error) throw new Error(p.error.message || JSON.stringify(p.error));
+    return JSON.parse(p.result?.content?.[0]?.text);
   }
+  const lines = t.split('\n').filter(l => l.startsWith('data:')).map(l => l.replace(/^data:\s*/,'')).filter(l => l && l !== '[DONE]');
+  if (!lines.length) throw new Error('Empty response: ' + t.slice(0, 120));
+  const p = JSON.parse(lines[lines.length - 1]);
+  if (p.error) throw new Error(p.error.message || JSON.stringify(p.error));
+  return JSON.parse(p.result?.content?.[0]?.text);
+}
 
-  function save() {
-    localStorage.setItem('jk_config', JSON.stringify(config));
-    localStorage.setItem('jk_visits', JSON.stringify(visits));
-  }
-
-  // --- INIT ---
-  const PRESET_VISITS = [
-    {type:'bouldern', datum:'2025-10-20'},{type:'klettern', datum:'2025-10-22'},
-    {type:'klettern', datum:'2025-10-26'},{type:'klettern', datum:'2025-10-29'},
-    {type:'klettern', datum:'2025-11-05'},{type:'klettern', datum:'2025-11-16'},
-    {type:'bouldern', datum:'2025-11-24'},{type:'klettern', datum:'2025-11-25'},
-    {type:'klettern', datum:'2025-11-26'},{type:'bouldern', datum:'2025-11-28'},
-    {type:'klettern', datum:'2025-12-03'},{type:'bouldern', datum:'2025-12-06'},
-    {type:'bouldern', datum:'2025-12-07'},{type:'bouldern', datum:'2025-12-09'},
-    {type:'klettern', datum:'2025-12-13'},{type:'klettern', datum:'2025-12-14'},
-    {type:'klettern', datum:'2025-12-17'},{type:'klettern', datum:'2025-12-26'},
-    {type:'bouldern', datum:'2026-01-03'},{type:'klettern', datum:'2026-01-04'},
-    {type:'klettern', datum:'2026-01-06'},{type:'klettern', datum:'2026-01-07'},
-    {type:'klettern', datum:'2026-01-09'},{type:'klettern', datum:'2026-01-11'},
-    {type:'klettern', datum:'2026-01-18'},{type:'bouldern', datum:'2026-01-21'},
-    {type:'klettern', datum:'2026-01-22'},{type:'bouldern', datum:'2026-01-27'},
-    {type:'klettern', datum:'2026-01-28'},{type:'klettern', datum:'2026-02-02'},
-    {type:'klettern', datum:'2026-02-05'},{type:'klettern', datum:'2026-02-04'},
-    {type:'klettern', datum:'2026-02-15'},{type:'klettern', datum:'2026-02-25'},
-    {type:'klettern', datum:'2026-03-07'},{type:'klettern', datum:'2026-03-11'},
-  ].map((v, i) => ({...v, id: 1700000000000 + i}))
-   .sort((a, b) => b.datum.localeCompare(a.datum));
-
-  function init() {
-    load();
-    // Inject preset visits if storage is empty
-    if (visits.length === 0) {
-      visits = PRESET_VISITS;
-      save();
-    }
-    // Set today
-    setToday();
-    // Fill config fields
-    if (config.preis)    document.getElementById('karte-preis').value = config.preis;
-    if (config.start)    document.getElementById('karte-start').value = config.start;
-    if (config.ende)     document.getElementById('karte-ende').value = config.ende;
-    if (config.klettern) document.getElementById('preis-klettern').value = config.klettern;
-    if (config.bouldern) document.getElementById('preis-bouldern').value = config.bouldern;
-    render();
-  }
-
-  function setToday() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('check-datum').value = today;
-  }
-
-  // --- ACTIONS ---
-  function saveConfig() {
-    config.preis    = parseFloat(document.getElementById('karte-preis').value) || 0;
-    config.start    = document.getElementById('karte-start').value;
-    config.ende     = document.getElementById('karte-ende').value;
-    config.klettern = parseFloat(document.getElementById('preis-klettern').value) || 0;
-    config.bouldern = parseFloat(document.getElementById('preis-bouldern').value) || 0;
-    save();
-    render();
-    flashEl('setup-section');
-  }
-
-  function addVisit(type) {
-    const datum = document.getElementById('check-datum').value;
-    if (!datum) { alert('Bitte Datum wählen.'); return; }
-    visits.unshift({ type, datum, id: Date.now() });
-    save();
-    render();
-  }
-
-  function deleteVisit(id) {
-    visits = visits.filter(v => v.id !== id);
-    save();
-    render();
-  }
-
-  function importVisits() {
-    const raw = document.getElementById('import-text').value.trim();
-    const fb = document.getElementById('import-feedback');
-    if (!raw) { fb.innerHTML = '<span class="import-warn">Kein Text eingegeben.</span>'; return; }
-
-    const lines = raw.split('\n');
-    let added = 0, skipped = 0, errors = [];
-
-    // Build set of existing datums for duplicate check
-    const existing = new Set(visits.map(v => v.datum + '|' + v.type));
-
-    lines.forEach((line, idx) => {
-      const clean = line.trim();
-      if (!clean) return;
-
-      // Parse: DD.MM.YYYY<whitespace>K|B
-      const match = clean.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+([kKbB])$/);
-      if (!match) {
-        errors.push(`Zeile ${idx+1}: "${clean}"`);
-        return;
-      }
-
-      const [, dd, mm, yyyy, typeChar] = match;
-      // Validate date
-      const dateStr = `${yyyy}-${mm}-${dd}`;
-      const d = new Date(dateStr + 'T12:00:00');
-      if (isNaN(d.getTime()) || d.getFullYear() < 2000 || d.getFullYear() > 2100) {
-        errors.push(`Zeile ${idx+1}: ungültiges Datum "${clean}"`);
-        return;
-      }
-
-      const type = typeChar.toLowerCase() === 'k' ? 'klettern' : 'bouldern';
-      const key = dateStr + '|' + type;
-
-      if (existing.has(key)) {
-        skipped++;
-        return;
-      }
-
-      visits.push({ type, datum: dateStr, id: Date.now() + Math.random() });
-      existing.add(key);
-      added++;
+async function mcpCall(toolName, args) {
+  if (!sessionId) {
+    const r = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream' },
+      body: JSON.stringify({ jsonrpc:'2.0', id:1, method:'initialize', params:{ protocolVersion:'2024-11-05', capabilities:{}, clientInfo:{ name:'test-ui', version:'1.0' } } })
     });
-
-    // Re-sort descending
-    visits.sort((a, b) => b.datum.localeCompare(a.datum));
-    save();
-    render();
-
-    // Feedback
-    let msg = '';
-    if (added > 0) msg += `<span class="import-ok">✓ ${added} Einträge importiert.</span> `;
-    if (skipped > 0) msg += `<span class="import-warn">${skipped} Duplikate übersprungen.</span> `;
-    if (errors.length > 0) msg += `<span class="import-err">⚠ ${errors.length} Fehler: ${errors.join(', ')}</span>`;
-    fb.innerHTML = msg || '<span class="import-ok">✓ Alles importiert.</span>';
-
-    if (added > 0) document.getElementById('import-text').value = '';
+    const sid = r.headers.get('mcp-session-id') || r.headers.get('Mcp-Session-Id');
+    if (sid) sessionId = sid;
+    await r.text();
   }
+  const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream' };
+  if (sessionId) headers['Mcp-Session-Id'] = sessionId;
+  const resp = await fetch(BASE, {
+    method: 'POST', headers,
+    body: JSON.stringify({ jsonrpc:'2.0', id: Date.now(), method:'tools/call', params:{ name: toolName, arguments: args } })
+  });
+  return parseSSEorJSON(await resp.text());
+}
 
-  // --- RENDER ---
-  function render() {
-    const kartePreis = config.preis || 0;
-    const preisK = config.klettern || 0;
-    const preisB = config.bouldern || 0;
+async function runCatalog() {
+  setStatus('cat-status', 'calling tool…', 'loading');
+  document.getElementById('cat-result').innerHTML = '';
+  try {
+    const cat = document.getElementById('cat-filter').value;
+    const data = await mcpCall('ibp.get_keyfigure_catalog', cat ? { category: cat } : {});
+    setStatus('cat-status', '✓ returned ' + data.length + ' key figure(s)', 'ok');
+    let html = '<div class="kf-grid">';
+    data.forEach(kf => {
+      html += '<div class="kf-card"><div class="kf-label">' + kf.label + '</div><div class="kf-name">' + kf.name + '</div><div class="kf-desc">' + kf.description + '</div><span class="badge badge-' + kf.category + '">' + kf.category + '</span><span style="font-size:11px;color:#888;margin-left:6px;">' + kf.unit + ' · ' + (kf.editable ? 'editable' : 'read-only') + '</span></div>';
+    });
+    html += '</div>';
+    document.getElementById('cat-result').innerHTML = html;
+  } catch(e) { setStatus('cat-status', '✗ ' + e.message, 'err'); }
+}
 
-    const anzahlK = visits.filter(v => v.type === 'klettern').length;
-    const anzahlB = visits.filter(v => v.type === 'bouldern').length;
-    const total = visits.length;
+async function runRead() {
+  setStatus('rd-status', 'calling tool…', 'loading');
+  document.getElementById('rd-result').innerHTML = '';
+  try {
+    const args = { keyFigure: document.getElementById('rd-kf').value, startPeriod: document.getElementById('rd-start').value, endPeriod: document.getElementById('rd-end').value };
+    const pa = document.getElementById('rd-pa').value;
+    const prod = document.getElementById('rd-prod').value;
+    const loc = document.getElementById('rd-loc').value;
+    if (pa) args.planningArea = pa;
+    if (prod) args.product = prod;
+    if (loc) args.location = loc;
+    const data = await mcpCall('ibp.read_planning_data', args);
+    setStatus('rd-status', '✓ returned ' + data.periods.length + ' period(s)', 'ok');
+    const vals = data.periods.map(p => p.value || 0);
+    const maxV = Math.max(...vals);
+    let html = '<div class="chart-bars">';
+    data.periods.forEach(p => {
+      const pct = maxV ? Math.round((p.value / maxV) * 100) : 0;
+      html += '<div class="bar-wrap"><div class="bar-val">' + (p.value || '—') + '</div><div class="bar" style="height:' + pct + '%"></div><div class="bar-lbl">' + p.period.slice(5) + '</div></div>';
+    });
+    html += '</div><pre class="result-box">' + JSON.stringify(data, null, 2) + '</pre>';
+    document.getElementById('rd-result').innerHTML = html;
+  } catch(e) { setStatus('rd-status', '✗ ' + e.message, 'err'); }
+}
 
-    // What would have been paid without card
-    const ohneKarte = anzahlK * preisK + anzahlB * preisB;
-    const gespart = ohneKarte - kartePreis;
-    const avgKosten = total > 0 ? (kartePreis / total) : 0;
-
-    // Break-even: how many visits needed
-    // We use average price per visit type (weighted if mixed, else fallback)
-    let avgPreisProBesuch = 0;
-    if (total > 0) {
-      avgPreisProBesuch = ohneKarte / total;
-    } else {
-      // Estimate from config
-      const prices = [preisK, preisB].filter(p => p > 0);
-      avgPreisProBesuch = prices.length > 0 ? prices.reduce((a,b) => a+b, 0) / prices.length : 10;
-    }
-
-    const breakEvenBesuche = avgPreisProBesuch > 0 ? Math.ceil(kartePreis / avgPreisProBesuch) : 0;
-    const nochNoetig = Math.max(0, breakEvenBesuche - total);
-    const progress = breakEvenBesuche > 0 ? Math.min(100, Math.round(total / breakEvenBesuche * 100)) : 0;
-
-    // Fill stats
-    document.getElementById('stat-besuche').textContent = total;
-    document.getElementById('stat-split').textContent =
-      total > 0 ? `${anzahlK}× Klettern · ${anzahlB}× Bouldern` : '–';
-
-    document.getElementById('stat-avg').textContent = total > 0 ? `${fmt(avgKosten)} €` : '–';
-    document.getElementById('stat-avg-sub').textContent = total > 0 ? `effektiv/Besuch` : '–';
-
-    const savedEl = document.getElementById('stat-saved');
-    savedEl.textContent = kartePreis > 0 ? `${fmt(Math.abs(gespart))} €` : '–';
-    savedEl.className = 'stat-value ' + (gespart >= 0 ? 'green' : 'red');
-
-    document.getElementById('stat-needed').textContent = breakEvenBesuche > 0 ? nochNoetig : '–';
-    document.getElementById('stat-needed-sub').textContent = breakEvenBesuche > 0
-      ? `von ${breakEvenBesuche} gesamt nötig`
-      : 'zum Break-even';
-
-    // Progress bar
-    document.getElementById('progress-label').textContent = `${progress} %`;
-    const fill = document.getElementById('progress-fill');
-    fill.style.width = progress + '%';
-    fill.style.background = progress >= 100
-      ? 'var(--good)'
-      : progress >= 60
-        ? 'var(--accent-climb)'
-        : 'var(--accent-boulder)';
-
-    // Verdict
-    const vBox = document.getElementById('verdict-box');
-    if (kartePreis === 0) {
-      vBox.innerHTML = `<span class="muted">Jahreskarte noch nicht konfiguriert.</span>`;
-    } else if (total === 0) {
-      vBox.innerHTML = `Noch kein Besuch eingetragen. Break-even bei <span class="amount">${breakEvenBesuche} Besuchen</span>.`;
-    } else if (gespart > 0) {
-      vBox.innerHTML = `✅ <span class="amount green">${fmt(gespart)} €</span> gespart — die Jahreskarte hat sich gelohnt!`;
-    } else if (nochNoetig === 0) {
-      vBox.innerHTML = `✅ Break-even erreicht! Jeder weitere Besuch spart <span class="amount green">${fmt(avgPreisProBesuch)} €</span>.`;
-    } else {
-      // Time remaining
-      let zeitHinweis = '';
-      if (config.ende) {
-        const tageRest = Math.ceil((new Date(config.ende) - new Date()) / 86400000);
-        if (tageRest > 0) {
-          const noetigProWoche = (nochNoetig / (tageRest / 7)).toFixed(1);
-          zeitHinweis = ` (noch ${tageRest} Tage, ~${noetigProWoche}×/Woche)`;
-        } else {
-          zeitHinweis = ` — Jahreskarte abgelaufen`;
-        }
-      }
-      vBox.innerHTML = `⚠️ Noch <span class="amount orange">${nochNoetig} Besuche</span> bis Break-even${zeitHinweis}.`;
-    }
-
-    // Log
-    renderLog();
-  }
-
-  function renderLog() {
-    const el = document.getElementById('log-list');
-    if (visits.length === 0) {
-      el.innerHTML = `<div class="empty-log">Noch keine Besuche eingetragen.</div>`;
-      return;
-    }
-    el.innerHTML = visits.map(v => `
-      <div class="log-entry">
-        <div class="log-dot ${v.type === 'klettern' ? 'dot-klettern' : 'dot-bouldern'}"></div>
-        <div class="log-type">
-          <span class="badge ${v.type === 'klettern' ? 'badge-climb' : 'badge-boulder'}">
-            ${v.type === 'klettern' ? 'Klettern' : 'Bouldern'}
-          </span>
-        </div>
-        <div class="log-date">${formatDate(v.datum)}</div>
-        <button class="btn-delete" onclick="deleteVisit(${v.id})" title="Löschen">✕</button>
-      </div>
-    `).join('');
-  }
-
-  function fmt(n) {
-    return Number(n).toFixed(2).replace('.', ',');
-  }
-
-  function formatDate(dateStr) {
-    if (!dateStr) return '–';
-    const d = new Date(dateStr + 'T12:00:00');
-    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  }
-
-  function flashEl(id) {
-    const el = document.getElementById(id);
-    el.style.borderColor = 'var(--accent-climb)';
-    setTimeout(() => { el.style.borderColor = ''; }, 800);
-  }
-
-  init();
+async function runSim() {
+  setStatus('sim-status', 'calling tool…', 'loading');
+  document.getElementById('sim-result').innerHTML = '';
+  try {
+    const periods = JSON.parse(document.getElementById('sim-periods').value);
+    const data = await mcpCall('ibp.simulate_forecast_change', { periods, adjustmentType: document.getElementById('sim-type').value, adjustmentValue: parseFloat(document.getElementById('sim-val').value) });
+    setStatus('sim-status', '✓ simulated ' + data.newValues.length + ' period(s)', 'ok');
+    let html = '<div class="delta-grid">';
+    data.newValues.forEach((nv, i) => {
+      const ov = data.oldValues[i]; const dv = data.deltaValues[i]; const up = dv.value > 0;
+      html += '<div class="delta-card"><div class="delta-period">' + nv.period + '</div><div style="font-size:13px;"><span style="color:#888">' + ov.value + '</span><span style="margin:0 4px;">→</span><span style="font-weight:600">' + nv.value + '</span><span class="' + (up ? 'delta-up' : 'delta-dn') + '" style="font-size:11px;margin-left:4px;">' + (up ? '+' : '') + dv.value + '</span></div></div>';
+    });
+    html += '</div>';
+    document.getElementById('sim-result').innerHTML = html;
+  } catch(e) { setStatus('sim-status', '✗ ' + e.message, 'err'); }
+}
 </script>
-
 </body>
 </html>
